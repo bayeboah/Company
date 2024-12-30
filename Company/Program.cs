@@ -1,3 +1,7 @@
+using AutoMapper;
+using Company.Configuration;
+using Company.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -18,6 +22,8 @@ Log.Logger = new LoggerConfiguration().WriteTo.File(
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection"))) ;
 builder.Services.AddCors(O =>
 {
     O.AddPolicy("CorsPolicy", builder =>
@@ -25,6 +31,11 @@ builder.Services.AddCors(O =>
     .AllowAnyMethod()
     .AllowAnyHeader());
 });
+
+// Configuring AutoMapper
+builder.Services.AddAutoMapper(typeof(MapperInitializer));
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo   { Title ="Company", Version ="V1"}));
