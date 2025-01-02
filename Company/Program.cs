@@ -1,6 +1,8 @@
 using AutoMapper;
 using Company.Configuration;
 using Company.Data;
+using Company.Irepository;
+using Company.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -20,8 +22,9 @@ Log.Logger = new LoggerConfiguration().WriteTo.File(
     ).CreateLogger();
 
 // Add services to the container.
-
-builder.Services.AddControllers();
+// Ignores the link between in tables. USE NewtonsoftJson
+builder.Services.AddControllers().AddNewtonsoftJson(
+    o => o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection"))) ;
 builder.Services.AddCors(O =>
@@ -34,6 +37,8 @@ builder.Services.AddCors(O =>
 
 // Configuring AutoMapper
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -53,10 +58,13 @@ try
     }
 
     app.UseHttpsRedirection();
-
+     
     app.UseCors("CorsPolicy");
 
+
     app.UseAuthorization();
+
+   
 
     app.MapControllers();
 
